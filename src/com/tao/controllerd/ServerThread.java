@@ -2,6 +2,7 @@ package com.tao.controllerd;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
@@ -55,5 +56,20 @@ public class ServerThread implements Runnable
 		SimpleDateFormat dateFormat = new SimpleDateFormat("hh:mm:ss", Locale.CHINA);
 		intent.putExtra("connect_info", String.format("From:%s At:%s", addr, dateFormat.format(new Date())));
 		context.sendBroadcast(intent);
+	}
+	public static void sendResponse(String response)
+	{
+		try
+		{
+			for (Socket sock : connectedClients) 
+			{
+				PrintStream printStream = new PrintStream(sock.getOutputStream());
+				printStream.println(response);
+			}
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 }
