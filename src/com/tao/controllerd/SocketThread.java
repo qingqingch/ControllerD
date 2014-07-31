@@ -51,11 +51,7 @@ public class SocketThread implements Runnable
 					
 					String response = "cmd_type=update_device&data=";
 					response += getDevices(db);
-					for (Socket sock : ServerThread.connectedClients) 
-					{
-						printStream = new PrintStream(sock.getOutputStream());
-						printStream.println(response);
-					}
+					ServerThread.sendResponse(response);
 					
 				} 
 				else if (cmdType.equals("change_lightness")) 
@@ -77,11 +73,7 @@ public class SocketThread implements Runnable
 						response += cursor.getString(cursor.getColumnIndex("lightness")) + "|";
 					}
 					
-					for (Socket sock : ServerThread.connectedClients) 
-					{
-						printStream = new PrintStream(sock.getOutputStream());
-						printStream.println(response);
-					}
+					ServerThread.sendResponse(response);
 					
 				} 
 				else if (cmdType.equals("update_status")) 
@@ -149,12 +141,7 @@ public class SocketThread implements Runnable
 						ps.println("cmd_type=debug_info&data=" + failedIds);
 					}
 					String response = "cmd_type=update_device&data=";
-					for (Socket sock : ServerThread.connectedClients) 
-					{
-						printStream = new PrintStream(sock.getOutputStream());
-						printStream.println(response+getDevices(db));
-					}
-					
+					ServerThread.sendResponse(response + getDevices(db));
 				} 
 				else if (cmdType.equals("add_task")) 
 				{
@@ -175,12 +162,7 @@ public class SocketThread implements Runnable
 					ServerThread.alarmSettingHelper.registAlarm(rowid, time, dow, ids, Integer.parseInt(lightness));
 					
 					String response = "cmd_type=update_task&data=" + result;
-					for (Socket sock : ServerThread.connectedClients) 
-					{
-						printStream = new PrintStream(sock.getOutputStream());
-						printStream.println(response);
-					}
-					
+					ServerThread.sendResponse(response);
 				} 
 				else if (cmdType.equals("delete_task")) 
 				{
@@ -189,11 +171,7 @@ public class SocketThread implements Runnable
 					ServerThread.alarmSettingHelper.unregistAlarm(Integer.parseInt(rowid));
 					String response = "cmd_type=update_task&data=";
 					response += getTasks(db);
-					for (Socket sock : ServerThread.connectedClients) 
-					{
-						printStream = new PrintStream(sock.getOutputStream());
-						printStream.println(response);
-					}
+					ServerThread.sendResponse(response);
 				} 
 				else if (cmdType.equals("update_task")) 
 				{
@@ -219,12 +197,7 @@ public class SocketThread implements Runnable
 					
 					String result = getTasks(db);
 					String response = "cmd_type=update_task&data=" + result;
-					for (Socket sock : ServerThread.connectedClients) 
-					{
-						printStream = new PrintStream(sock.getOutputStream());
-						printStream.println(response);
-					}
-					
+					ServerThread.sendResponse(response);
 				} 
 				else if (cmdType.equals("commandAll")) 
 				{
@@ -255,11 +228,7 @@ public class SocketThread implements Runnable
 					db.update("devices", cvs, null, null);
 					String response = "cmd_type=update_device&data=";
 					response += getDevices(db);
-					for (Socket sock : ServerThread.connectedClients) 
-					{
-						printStream = new PrintStream(sock.getOutputStream());
-						printStream.println(response);
-					}
+					ServerThread.sendResponse(response);
 				} 
 				else if (cmdType.equals("toggle_task")) 
 				{
@@ -281,11 +250,7 @@ public class SocketThread implements Runnable
 					
 					String result = getTasks(db);
 					String response = "cmd_type=update_task&data=" + result;
-					for (Socket sock : ServerThread.connectedClients) 
-					{
-						printStream = new PrintStream(sock.getOutputStream());
-						printStream.println(response);
-					}
+					ServerThread.sendResponse(response);
 				} 
 				else if (cmdType.equals("find_server")) 
 				{
