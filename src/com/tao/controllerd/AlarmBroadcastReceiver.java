@@ -60,10 +60,13 @@ public class AlarmBroadcastReceiver extends BroadcastReceiver
 					}
 					pathSet.add("65535");
 					
-					for (String p : pathSet) 
+					for (int i = 0; i < 3; i ++)
 					{
-						ServerThread.serialPort.sendCmd(SerialPort.CmdType.OPERATE, p, lightness);
-						Thread.sleep(800);
+						for (String p : pathSet) 
+						{
+							ServerThread.serialPort.sendCmd(SerialPort.CmdType.OPERATE, p, lightness);
+							Thread.sleep(800);
+						}
 					}
 				}
 				ArrayList<String> paths = new ArrayList<String>();
