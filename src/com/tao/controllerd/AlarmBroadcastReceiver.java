@@ -1,8 +1,5 @@
 package com.tao.controllerd;
 
-import java.io.PrintStream;
-import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
@@ -64,43 +61,48 @@ public class AlarmBroadcastReceiver extends BroadcastReceiver
 					{
 						for (String p : pathSet) 
 						{
-							ServerThread.serialPort.sendCmd(SerialPort.CmdType.OPERATE, p, lightness);
-							Thread.sleep(800);
+							ServerThread.serialPort.sendCmd(SerialPort.CmdType.OPERATE_ALL, p, lightness);
+							Thread.sleep(500);
 						}
 					}
-				}
-				ArrayList<String> paths = new ArrayList<String>();
-				for (String devId : devIds) 
-				{
-					ContentValues cvs = new ContentValues();
-					cvs.put("lightness", lightness);
-					db.update("devices", cvs, "id=?", new String[]{devId});
 					
-					Cursor cursor = db.query("devices", new String[]{"path"}, "id=?", new String[]{devId}, 
-							null, null, null);
-					while (cursor.moveToNext()) 
+					for (String devId : devIds)
 					{
-						String path = cursor.getString(cursor.getColumnIndex("path"));
-						String p = path.substring(1, path.indexOf("]"));
-						paths.add(p);
-						Thread.sleep(300);
-						ServerThread.serialPort.sendCmd(SerialPort.CmdType.OPERATE, path, lightness);
+						ContentValues cvs = new ContentValues();
+						cvs.put("lightness", lightness);
+						db.update("devices", cvs, "id=?", new String[]{devId});
 					}
 				}
-				
-				for (String pa : paths) 
+				else
 				{
-					Thread.sleep(300);	
-					ServerThread.serialPort.sendCmd(SerialPort.CmdType.OPERATE, pa, lightness);
+					for (String devId : devIds) 
+					{
+						Cursor cursor = db.query("devices", new String[]{"path"}, "id=?", new String[]{devId}, 
+								null, null, null);
+						while (cursor.moveToNext()) 
+						{
+							String path = cursor.getString(cursor.getColumnIndex("path"));
+							String p = path.substring(1, path.indexOf("]"));
+							int success = 0;
+							for (int i = 0; i < 3; i++)
+							{
+								success = ServerThread.serialPort.sendCmd(SerialPort.CmdType.OPERATE, p, lightness);
+								if (success == 0) break;
+								Thread.sleep(500);
+							}
+							if (success == 0)
+							{
+								ContentValues cvs = new ContentValues();
+								cvs.put("lightness", lightness);
+								db.update("devices", cvs, "id=?", new String[]{devId});
+							}
+						}
+					}
+					
 				}
 				String response = "cmd_type=update_device&data=";
 				response += SocketThread.getDevices(db);
-				PrintStream printStream;
-				for (Socket sock : ServerThread.connectedClients) 
-				{
-					printStream = new PrintStream(sock.getOutputStream());
-					printStream.println(response);
-				}
+				ServerThread.sendResponse(response);
 			}
 			catch (Exception e)
 			{

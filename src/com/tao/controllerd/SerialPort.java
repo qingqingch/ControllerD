@@ -14,7 +14,7 @@ public class SerialPort
 	private FileInputStream mFileInputStream;
 	private FileOutputStream mFileOutputStream;
 	private int packId = 0;
-	public enum CmdType{VISIT, OPERATE};
+	public enum CmdType{VISIT, OPERATE, OPERATE_ALL};
 	
 	public SerialPort(File device, int baudrate) throws IOException 
 	{
@@ -89,7 +89,7 @@ public class SerialPort
 		try 
 		{
 			mFileOutputStream.write(buf.toByteArray());
-			if (cmdType != CmdType.VISIT) return 0;
+			if (cmdType == CmdType.OPERATE_ALL) return 0;
 			if (waitForRead(2) == 0) return -1;
 			int item = mFileInputStream.read();			
 			if (item != 0xc0) return -1;

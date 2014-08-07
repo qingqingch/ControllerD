@@ -58,13 +58,22 @@ public class SocketThread implements Runnable
 				{
 					String path = args.get("device_path");
 					String lightness = args.get("lightness");
-					ContentValues values = new ContentValues();
-					values.put("lightness", lightness);
-					int dotIndex = path.indexOf(",");
-					int endIndex = dotIndex == -1 ? path.length() : dotIndex;
-					db.update("devices", values, "id=?", new String[]{path.substring(0, endIndex)});
 					
-					ServerThread.serialPort.sendCmd(SerialPort.CmdType.OPERATE, path, Integer.parseInt(lightness));
+					int success = 0;
+					for (int i = 0; i < 3; i++)
+					{
+						success = ServerThread.serialPort.sendCmd(SerialPort.CmdType.OPERATE, path, Integer.parseInt(lightness));
+						if (success == 0) break;
+						Thread.sleep(500);
+					}
+					if (success == 0)
+					{
+						ContentValues values = new ContentValues();
+						values.put("lightness", lightness);
+						int dotIndex = path.indexOf(",");
+						int endIndex = dotIndex == -1 ? path.length() : dotIndex;
+						db.update("devices", values, "id=?", new String[]{path.substring(0, endIndex)});
+					}
 					Cursor cursor = db.query("devices",new String[]{"lightness"},
 							null,null,null,null,null);
 					String response = "cmd_type=update_status&data=";
@@ -206,6 +215,7 @@ public class SocketThread implements Runnable
 							null,null,null,null,null);
 					
 					Set<String> pathSet = new HashSet<>();
+					
 					while (cursor.moveToNext()) 
 					{
 						String path = cursor.getString(0);
@@ -218,8 +228,8 @@ public class SocketThread implements Runnable
 					{
 						for (String p : pathSet)
 						{
-							ServerThread.serialPort.sendCmd(SerialPort.CmdType.OPERATE, p, lightness);
-							Thread.sleep(800);
+							ServerThread.serialPort.sendCmd(SerialPort.CmdType.OPERATE_ALL, p, lightness);
+							Thread.sleep(500);
 						}
 					}
 					
